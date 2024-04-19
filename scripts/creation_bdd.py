@@ -1,10 +1,10 @@
 """ 
 TODO :
 
-Lire geographie_2020.xlsx, 
+Lire geographie_2020.xls, 
 Créer et remplir les tables REGIONS et DEPARTEMENTS.
 
-Puis Lire DD-TIC-indic-reg-dep_2008_2019_2022.xls et Evolution_population_2012-2023.xlsx
+Puis Lire DD-TIC-indic-reg-dep_2008_2019_2022.xls et Evolution_population_2012-2023.xls
 Completer la base de donnée, en créant au moins 4 tables
 
 """
