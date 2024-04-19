@@ -11,3 +11,6 @@ Completer la base de donnée, en créant au moins 4 tables
 
 def test():
     print("hello")
+
+def test2():
+    print("hello")
