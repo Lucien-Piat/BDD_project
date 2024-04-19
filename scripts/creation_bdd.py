@@ -13,12 +13,15 @@ import pandas as pd
 import psycopg2
 import psycopg2.extras
 
+# Faudra tenir compte qu'il ya plusieurs feuilles par fichier, il faut surement créer une dataframe pour chaque feuille (table)
+# Par exemple geographie_2020.xls contient les feuilles regions et departement pour nos tables regions et departements
+# On va créer une dataframe pour lire les feuilles nécéssaires 
 # Lire les données géographiques
-geographie_df = pd.read_excel("geographie_2020.xlsx")
+geographie_df = pd.read_excel("geographie_2020.xls")
 
 # Lire les données sociales et économiques
 donnees_sociales_df = pd.read_excel("DD-TIC-indic-reg-dep_2008_2019_2022.xls")
-donnees_population_df = pd.read_excel("Evolution_population_2012-2023.xlsx")
+donnees_population_df = pd.read_excel("Evolution_population_2012-2023.xls")
 
 
 # Try to connect to an existing database
