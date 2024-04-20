@@ -12,4 +12,7 @@ Quelle est l'estimation de population en 2020 de tous les départements où l'ab
 Quelle était la part de la population ayant une utilisation quotidienne d'internet dans les régions où le taux d'activité était >75% en 2019 et où la Part de la population éloignée de plus de 7 mn des services de santé de proximité était de moins de 5% en 2021.
 
 """
-
+import pandas as pd
+import psycopg2 
+import psycopg2.extras
+from creation_bdd import connection, execute_command
