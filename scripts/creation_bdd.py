@@ -46,16 +46,23 @@ def execute_command(command, conn, cur, values=None):
         conn.close()
         print("Error:", e)
 
+def lire_selectif(fichier, feuille, collones, ligne_depart, nombre_de_lignes):
+    return pd.read_excel("fichiers_fournis\\"+fichier,sheet_name=feuille, usecols=collones, skiprows=ligne_depart, nrows=nombre_de_lignes)
 
 
 # Lire les données géographiques
-departements_df = pd.read_excel("geographie_2020.xls", sheet_name=1)
-regions_df = pd.read_excel("geographie_2020.xls", sheet_name=2) # On précise la feuille a lire
+departements_df = pd.read_excel("fichiers_fournis\\geographie_2020.xls", sheet_name=0) #OK
+
+regions_df = pd.read_excel("fichiers_fournis\\geographie_2020.xls", sheet_name=1) #OK
 
 # Lire les données sociales et économiques
-donnees_population_df = pd.read_excel("Evolution_population_2012-2023.xls",sheet_name=1)
-donnees_sociales_df = pd.read_excel("DD-TIC-indic-reg-dep_2008_2019_2022.xls", sheet_name=2)
-donnees_economie_df = pd.read_excel("DD-TIC-indic-reg-dep_2008_2019_2022.xls", sheet_name=3)
+donnees_population_df = lire_selectif("Evolution_population_2012-2023.xlsx", 0, "A:Q", 3, 101) #OK
+donnees_population_df = donnees_population_df.drop(96) # On retire la ligne inutile
+donnees_population_df.columns.values[0] = 'code' #On renomme les collones 
+donnees_population_df.columns.values[1] = 'departement'
+
+donnees_sociales_df = pd.read_excel("DD-TIC-indic-reg-dep_2008_2019_2022.xls", sheet_name=1) #TODO
+donnees_economie_df = pd.read_excel("DD-TIC-indic-reg-dep_2008_2019_2022.xls", sheet_name=2) #TODO
 
 conn, cur = connection("username", "password") # à remplacer par le mot de passe d’accès aux bases
 
