@@ -115,16 +115,45 @@ execute_command(table_reg, conn, cur)
 #Insertions des données
 
 insert_reg = "INSERT INTO Regions (id_reg, nom_reg) VALUES (%s, %s)"
-#to do
+#to do/ la je crois que c'est bon pour l'insertion des valeurs
+for index, row in regions_df.iterrows():
+    id_reg = row['reg']
+    nom_reg = row['ncc']
+    cur.execute(insert_reg, (id_reg, nom_reg))
 
 insert_dep = "INSERT INTO Departements (id_dep, id_reg, nom_dep) VALUES (%s, %s, %s)"
-#to do
+#to do/ la je crois que c'est bon pour l'insertion des valeurs, le cure.execute faudra le modifier, par ce que tu as créé une fonction pour ça
+for index, row in departements_df.iterrows():
+    id_dep = row['dep']
+    id_reg = row['reg']
+    nom_dep = row['ncc']
+    cur.execute(insert_dep, (id_dep, id_reg, nom_dep))
 
 insert_pop = "INSERT INTO Population (id_dep, annee, nombre_personnes, pourcentage_inondation, pourcentage_diplome, taux_activité) VALUES (%s, %s, %s,%s, %s, %s)"
-#to do
+# to do/ c'est un template, à adapter car il faut selectionner les lignes et donner les noms des colonnes exactes qui sont dans les fichiers
+# ici les valeurs des attributs de notre table sont plustot présents dans le fichier DD-Tic... donc je ne sais pas comment inserer ces valeurs
+for index, row in donnees_population_df.iterrows():
+    id_dep = row['code']
+    annee = row['annee']
+    nombre_personnes = row['nombre_personnes']
+    pourcentage_inondation = row['pourcentage_inondation']
+    pourcentage_diplome = row['pourcentage_diplome']
+    taux_activite = row['taux_activite']
+    cur.execute(insert_pop, (id_dep, annee, nombre_personnes, pourcentage_inondation, pourcentage_diplome, taux_activite))
 
 insert_ER = "INSERT INTO EffortRecherche (id_reg, annee, pourcentage_effort, pourcentage_plus_7_min) VALUES (%s, %s, %s)"
-#to do
+#to do/ c'est un template, à adapter car il faut selectionner les lignes et donner les noms des colonnes exactes qui sont dans les fichiers
+for index, row in donnees_economie_df.iterrows():
+    id_reg = row['id_reg'] #dans le fichier il n'y a pas de nom donné à cette colonne
+    annee = row['annee']
+    pourcentage_effort = row['pourcentage_effort']
+    pourcentage_plus_7_min = row['pourcentage_plus_7_min']
+    cur.execute(insert_ER, (id_reg, annee, pourcentage_effort, pourcentage_plus_7_min))
 
 insert_CN = "INSERT INTO CompetencesNumeriques (id_reg, taux, intensite) VALUES (%s, %s, %s)"
-#to do
+#to do/c'est un template, à adapter car il faut selectionner les lignes et donner les noms des colonnes exactes qui sont dans les fichiers
+for index, row in donnees_sociales_df.iterrows():
+    id_reg = row['id_reg'] #dans le fichier il n'y a pas de nom donné à cette colonne
+    taux = row['taux']
+    intensite = row['intensite']
+    cur.execute(insert_CN, (id_reg, taux, intensite))
