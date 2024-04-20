@@ -13,3 +13,17 @@ Soit :
 6. Proposer l'impression de la table dans un fichier ou de retourner au départ du menu
 
 """
+
+import pandas as pd
+import psycopg2 
+import psycopg2.extras
+from creation_bdd import connection, execute_command
+
+def print_and_wait(message, list_des_choix):
+    while True:
+        try:
+            input = int(input(message))
+            break
+        except ValueError:
+            print("Merci d'entrer un nombre valide")
+
