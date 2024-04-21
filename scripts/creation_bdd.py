@@ -49,20 +49,46 @@ def execute_command(command, conn, cur, values=None):
 def lire_selectif(fichier, feuille, collones, ligne_depart, nombre_de_lignes):
     return pd.read_excel("fichiers_fournis\\"+fichier,sheet_name=feuille, usecols=collones, skiprows=ligne_depart, nrows=nombre_de_lignes)
 
+# Import des données 
 
-# Lire les données géographiques
-departements_df = pd.read_excel("fichiers_fournis\\geographie_2020.xls", sheet_name=0) #OK
+departements_df = pd.read_excel("fichiers_fournis\\geographie_2020.xls", sheet_name=0) 
+departements_df = departements_df.drop(departements_df.columns[2:4], axis=1)
+departements_df = departements_df.drop(departements_df.columns[3:], axis=1)
 
-regions_df = pd.read_excel("fichiers_fournis\\geographie_2020.xls", sheet_name=1) #OK
+regions_df = pd.read_excel("fichiers_fournis\\geographie_2020.xls", sheet_name=1)
+regions_df = regions_df.drop(regions_df.columns[1:3], axis=1)
+regions_df = regions_df.drop(regions_df.columns[2:], axis=1)
 
-# Lire les données sociales et économiques
-donnees_population_df = lire_selectif("Evolution_population_2012-2023.xlsx", 0, "A:Q", 3, 101) #OK
-donnees_population_df = donnees_population_df.drop(96) # On retire la ligne inutile
-donnees_population_df.columns.values[0] = 'code' #On renomme les collones 
-donnees_population_df.columns.values[1] = 'departement'
+donnees_dep_population_df = lire_selectif("Evolution_population_2012-2023.xlsx", 0, "A:Q", 3, 101) #OK
+donnees_dep_population_df = donnees_dep_population_df.drop(96) 
+donnees_dep_population_df = donnees_dep_population_df.drop(donnees_dep_population_df.columns[1:5], axis=1)
+donnees_dep_population_df = donnees_dep_population_df.drop(donnees_dep_population_df.columns[4:], axis=1)
+donnees_dep_population_df.columns.values[0] = 'dep' 
+donnees_dep_population_df.columns.values[1] = 'estimation_pop_2015'
+donnees_dep_population_df.columns.values[2] = 'estimation_pop_2020'
+donnees_dep_population_df.columns.values[3] = 'estimation_pop_2023'
 
-donnees_sociales_df = pd.read_excel("DD-TIC-indic-reg-dep_2008_2019_2022.xls", sheet_name=1) #TODO
-donnees_economie_df = pd.read_excel("DD-TIC-indic-reg-dep_2008_2019_2022.xls", sheet_name=2) #TODO
+donnees_reg_social_df = lire_selectif("DD-TIC-indic-reg-dep_2008_2019_2022.xls", 1, "A:U", 5, 17)
+donnees_reg_social_df = donnees_reg_social_df.drop(donnees_reg_social_df.columns[1:17], axis=1)
+donnees_reg_social_df.columns.values[0] = 'reg' 
+donnees_reg_social_df.columns.values[1] = 'egloignement_sante_2021'
+donnees_reg_social_df.columns.values[2] = 'egloignement_sante_2016'
+donnees_reg_social_df.columns.values[3] = 'zone_inondable_2013'
+donnees_reg_social_df.columns.values[4] = 'zone_inondable_2018'
+
+donnees_reg_economie_df = lire_selectif("DD-TIC-indic-reg-dep_2008_2019_2022.xls", 2, "B:S", 5, 17)
+donnees_reg_economie_df = donnees_reg_economie_df.drop(donnees_reg_economie_df.columns[1:2], axis=1)
+donnees_reg_economie_df = donnees_reg_economie_df.drop(donnees_reg_economie_df.columns[3:6], axis=1)
+donnees_reg_economie_df = donnees_reg_economie_df.drop(donnees_reg_economie_df.columns[5:12], axis=1)
+donnees_reg_economie_df.columns.values[0] = 'reg' 
+donnees_reg_economie_df.columns.values[1] = 'taux_axtivite_2019' 
+donnees_reg_economie_df.columns.values[2] = 'taux_axtivite_2017' 
+donnees_reg_economie_df.columns.values[3] = 'part_jeune_diplome_2014' 
+donnees_reg_economie_df.columns.values[4] = 'part_jeune_diplome_2019' 
+donnees_reg_economie_df.columns.values[5] = 'effort_recherche_2014' 
+donnees_reg_economie_df.columns.values[6] = 'effort_recherche_2015' 
+
+# Connection
 
 conn, cur = connection("username", "password") # à remplacer par le mot de passe d’accès aux bases
 
@@ -107,22 +133,18 @@ table_CN = """create table public.CompetencesNumeriques(
     taux FLOAT CHECK (taux =< 100),
     intensite VARCHAR CONSTRAINT intensite CHECK(intensite = "fort" or intensite = "quotidienne" or intensite = "sans") NOT NULL);"""
 
-# C'est pas un truc comme ca ? 
-"intensite TEXT NOT NULL CHECK (rang IN ('fort', 'quotidienne', 'sans')"
-
 execute_command(table_reg, conn, cur)
+
 
 #Insertions des données
 
 insert_reg = "INSERT INTO Regions (id_reg, nom_reg) VALUES (%s, %s)"
-#to do/ la je crois que c'est bon pour l'insertion des valeurs
 for index, row in regions_df.iterrows():
     id_reg = row['reg']
     nom_reg = row['ncc']
     cur.execute(insert_reg, (id_reg, nom_reg))
 
 insert_dep = "INSERT INTO Departements (id_dep, id_reg, nom_dep) VALUES (%s, %s, %s)"
-#to do/ la je crois que c'est bon pour l'insertion des valeurs, le cure.execute faudra le modifier, par ce que tu as créé une fonction pour ça
 for index, row in departements_df.iterrows():
     id_dep = row['dep']
     id_reg = row['reg']
