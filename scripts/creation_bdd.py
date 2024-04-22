@@ -111,21 +111,25 @@ execute_command(table_reg, conn, cur)
 # Table population
 table_pop = """create table public.Population(
     id_dep VARCHAR(3) REFERENCES Departements(id_dep) NOT NULL,
-    annee INT CHECK (annee =< 2024) NOT NULL,
-    nombre_personnes BIGINT NOT NULL, pourcentage_inondation FLOAT CHECK (pourcentage_inondation =< 100),
-    pourcentage_diplome FLOAT CHECK (pourcentage_diplome =< 100),
-    taux_activité FLOAT CHECK (taux_activité =< 100));"""
+    estimation_pop_2015 BIGINT NOT NULL, estimation_pop_2020 BIGINT NOT NULL, estimation_pop_2023 BIGINT NOT NULL,
+    zone_inondable_2013 FLOAT CHECK (zone_inondable_2013 =< 100), 
+    zone_inondable_2018 FLOAT CHECK (zone_inondable_2018 =< 100),
+    part_jeune_diplome_2014 FLOAT CHECK (part_jeune_diplome_2014 =< 100),
+    part_jeune_diplome_2019 FLOAT CHECK (part_jeune_diplome_2019 =< 100),
+    taux_activite_2019 FLOAT CHECK (taux_activite_2019 =< 100)
+    taux_activite_2017 FLOAT CHECK (taux_activite_2017 =< 100));"""
 
-execute_command(table_reg, conn, cur)
+execute_command(table_pop, conn, cur)
 
 # Table Effort Recherche (ER)
 table_ER = """create table public.EffortRecherche(
     id_reg INT CHECK (id_reg =< 94) REFERENCES Regions(id_reg) NOT NULL,
-    annee INT CHECK (annee =< 2024) NOT NULL,
-    pourcentage_effort FLOAT CHECK (pourcentage_effort =< 100) NOT NULL,
-    pourcentage_plus_7_min FLOAT CHECK (pourcentage_plus_7_min =< 100));"""
+    effort_recherche_2014 FLOAT CHECK (effort_recherche_2014 =< 100) NOT NULL,
+    effort_recherche_2015 FLOAT CHECK (effort_recherche_2015 =< 100) NOT NULL,
+    egloignement_sante_2021 FLOAT CHECK (egloignement_sante_2021 =< 100),
+    egloignement_sante_2016 FLOAT CHECK (egloignement_sante_2016 =< 100));"""
 
-execute_command(table_reg, conn, cur)
+execute_command(table_ER, conn, cur)
 
 # Table Competences numeriques (CN)
 table_CN = """create table public.CompetencesNumeriques(
@@ -151,27 +155,53 @@ for index, row in departements_df.iterrows():
     nom_dep = row['ncc']
     cur.execute(insert_dep, (id_dep, id_reg, nom_dep))
 
-insert_pop = "INSERT INTO Population (id_dep, annee, nombre_personnes, pourcentage_inondation, pourcentage_diplome, taux_activité) VALUES (%s, %s, %s,%s, %s, %s)"
+# J'essayes de fusionner les fichiers
+# Pour la table Populaton je constate que nous avons besoin des fichiers: donnees_reg_economie_df, donnees_reg_social_df et donnees_dep_population_df
+# Pour fusionner les trois nous allons d'abord faire une premiere fusion, et une deuxieme fusion apartir de la premiere fusion
+# Fusionner les deux fichiers sur leurs colonnes communes
+merged_pop_df = pd.merge(donnees_reg_economie_df, donnees_reg_social_df, on='reg')
+
+# Concaténer le résultat de la fusion avec les données du troisième fichier qui n'a pas de colonne en commun
+final_pop_def = pd.concat([merged_pop_df, donnees_dep_population_df], axis=0)
+
+
+insert_pop = "INSERT INTO Population (id_dep, estimation_pop_2015, estimation_pop_2020, estimation_pop_2023, zone_inondable_2013, zone_inondable_2018, part_jeune_diplome_2014, part_jeune_diplome_2019, taux_activite_2019, taux_activite_2017) VALUES (%s, %s,%s, %s, %s, %s, %s,%s, %s, %s)"
 # to do/ c'est un template, à adapter car il faut selectionner les lignes et donner les noms des colonnes exactes qui sont dans les fichiers
 # ici les valeurs des attributs de notre table sont plustot présents dans le fichier DD-Tic... donc je ne sais pas comment inserer ces valeurs
-for index, row in donnees_population_df.iterrows():
+for index, row in final_pop_def.iterrows():
     id_dep = row['code']
-    annee = row['annee']
-    nombre_personnes = row['nombre_personnes']
-    pourcentage_inondation = row['pourcentage_inondation']
-    pourcentage_diplome = row['pourcentage_diplome']
-    taux_activite = row['taux_activite']
-    cur.execute(insert_pop, (id_dep, annee, nombre_personnes, pourcentage_inondation, pourcentage_diplome, taux_activite))
+    #annee = row['annee'] # ça il faut enlever? pareil pour toutes les tables ou ya année
+    estimation_pop_2015 = row['estimation_pop_2015']
+    estimation_pop_2020 = row['estimation_pop_2020']
+    estimation_pop_2023 = row['estimation_pop_2023']
+    zone_inondable_2013 = row['zone_inondable_2013']
+    zone_inondable_2018 = row['zone_inondable_2018']
+    part_jeune_diplome_2014 = row['part_jeune_diplome_2014']
+    part_jeune_diplome_2019 = row['part_jeune_diplome_2019']
+    taux_activite_2019 = row['taux_activite_2019']
+    taux_activite_2017 = row['taux_activite_2017']
+    cur.execute(insert_pop, (id_dep, estimation_pop_2015, estimation_pop_2020, estimation_pop_2023, zone_inondable_2013, zone_inondable_2018, part_jeune_diplome_2014, part_jeune_diplome_2019, taux_activite_2019, taux_activite_2017))
 
-insert_ER = "INSERT INTO EffortRecherche (id_reg, annee, pourcentage_effort, pourcentage_plus_7_min) VALUES (%s, %s, %s)"
+# J'essayes de fusionner les fichiers
+# Pour la table EffortRecherche je constate que nous avons besoin des fichiers: donnees_reg_economie_df et donnees_reg_social_df
+# Pour fusionner les trois nous allons d'abord faire une premiere fusion, et une deuxieme fusion apartir de la premiere fusion
+# Fusionner les deux fichiers sur leurs colonnes communes
+# merged_ER_df = pd.merge(donnees_reg_economie_df, donnees_reg_social_df, on='reg')
+
+merged_ER_df = pd.merge(donnees_reg_economie_df, donnees_reg_social_df, on='reg')
+insert_ER = "INSERT INTO EffortRecherche (id_reg, effort_recherche_2014, effort_recherche_2015, egloignement_sante_2021, egloignement_sante_2016) VALUES (%s, %s, %s, %s, %s)"
+
 #to do/ c'est un template, à adapter car il faut selectionner les lignes et donner les noms des colonnes exactes qui sont dans les fichiers
-for index, row in donnees_economie_df.iterrows():
-    id_reg = row['id_reg'] #dans le fichier il n'y a pas de nom donné à cette colonne
-    annee = row['annee']
-    pourcentage_effort = row['pourcentage_effort']
-    pourcentage_plus_7_min = row['pourcentage_plus_7_min']
-    cur.execute(insert_ER, (id_reg, annee, pourcentage_effort, pourcentage_plus_7_min))
+for index, row in merged_ER_df.iterrows():
+    id_reg = row['reg']
+    effort_recherche_2014 = row['effort_recherche_2014']
+    effort_recherche_2015 = row['effort_recherche_2015']
+    egloignement_sante_2021 = row['egloignement_sante_2021']
+    egloignement_sante_2016 = row['egloignement_sante_2016']
+    cur.execute(insert_ER, (id_reg, effort_recherche_2014, effort_recherche_2015, egloignement_sante_2021, egloignement_sante_2016))
 
+# Du coup cette table et cette insertion ne sont pas nécéessaire, si? par ce que dans les fichiers que t'a créer je ne trouve pas de correspondance
+# Sauf si je me trompe
 insert_CN = "INSERT INTO CompetencesNumeriques (id_reg, taux, intensite) VALUES (%s, %s, %s)"
 #to do/c'est un template, à adapter car il faut selectionner les lignes et donner les noms des colonnes exactes qui sont dans les fichiers
 for index, row in donnees_sociales_df.iterrows():
