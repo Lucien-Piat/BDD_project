@@ -86,7 +86,7 @@ donnees_reg_economie_df.columns.values[2] = 'taux_axtivite_2017'
 donnees_reg_economie_df.columns.values[3] = 'part_jeune_diplome_2014' 
 donnees_reg_economie_df.columns.values[4] = 'part_jeune_diplome_2019' 
 donnees_reg_economie_df.columns.values[5] = 'effort_recherche_2014' 
-donnees_reg_economie_df.columns.values[6] = 'effort_recherche_2015' 
+donnees_reg_economie_df.columns.values[6] = 'effort_recherche_2010' 
 
 # Connection
 
@@ -125,7 +125,7 @@ execute_command(table_pop, conn, cur)
 table_ER = """create table public.EffortRecherche(
     id_reg INT CHECK (id_reg =< 94) REFERENCES Regions(id_reg) NOT NULL,
     effort_recherche_2014 FLOAT CHECK (effort_recherche_2014 =< 100) NOT NULL,
-    effort_recherche_2015 FLOAT CHECK (effort_recherche_2015 =< 100) NOT NULL,
+    effort_recherche_2010 FLOAT CHECK (effort_recherche_2010 =< 100) NOT NULL,
     egloignement_sante_2021 FLOAT CHECK (egloignement_sante_2021 =< 100),
     egloignement_sante_2016 FLOAT CHECK (egloignement_sante_2016 =< 100));"""
 
@@ -195,7 +195,7 @@ insert_ER = "INSERT INTO EffortRecherche (id_reg, effort_recherche_2014, effort_
 for index, row in merged_ER_df.iterrows():
     id_reg = row['reg']
     effort_recherche_2014 = row['effort_recherche_2014']
-    effort_recherche_2015 = row['effort_recherche_2015']
+    effort_recherche_2015 = row['effort_recherche_2010']
     egloignement_sante_2021 = row['egloignement_sante_2021']
     egloignement_sante_2016 = row['egloignement_sante_2016']
     cur.execute(insert_ER, (id_reg, effort_recherche_2014, effort_recherche_2015, egloignement_sante_2021, egloignement_sante_2016))
