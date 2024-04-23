@@ -70,13 +70,13 @@ file = "reponses.xlsx"
 # Afficher la liste des régions où le taux de la population habitant en zone inondable 
 # était supérieure a 10% en 2013, classées du plus fort taux au plus faible.
 
-Question_1 = """SELECT r.nom_reg, s.zone_inondable_2013
+question_1 = """SELECT r.nom_reg, s.zone_inondable_2013
     FROM public.Regions r 
     JOIN public.Social s ON r.id_reg = s.id_reg 
     WHERE s.zone_inondable_2013 > 10 
     ORDER BY s.zone_inondable_2013 DESC;"""
 
-output_dict = execute_query(Question_1, conn, cur)
+output_dict = execute_query(question_1, conn, cur)
 output_to_excel(output_dict, file)
 
 # Quelle est la variation de l'effort de recherche et développement entre 2010 et 2014 
@@ -120,16 +120,20 @@ question_4 = """SELECT d.nom_dep, d.estimation_pop_2020
     WHERE c.cn_forte < 25;
     """
 
-output_dict = execute_query(question_4, conn, cur, True)
+output_dict = execute_query(question_4, conn, cur)
 output_to_excel(output_dict, file)
-
-
-'''
 
 # Quelle était la part de la population ayant une utilisation quotidienne d'internet dans les régions où le taux d'activité 
 # était >75% en 2019 et où la Part de la population éloignée de plus de 7 mn des services de santé de proximité était de moins de 5% en 2021.
 
-Question_5 = "SELECT"
+question_5 = """SELECT r.nom_reg, c.cn_quotidienne 
+    FROM public.Regions r 
+    JOIN public.Social s ON r.id_reg = s.id_reg 
+    JOIN public.CompNum c ON r.id_reg = c.id_reg 
+    JOIN public.Economie e ON r.id_reg = e.id_reg 
+    WHERE e.taux_activite_2019 > 75
+        AND s.egloignement_sante_2021 < 5;
+    """
 
-execute_query(Question_5, conn, cur)
-'''
+output_dict = execute_query(question_5, conn, cur, True)
+output_to_excel(output_dict, file)
