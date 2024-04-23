@@ -17,20 +17,19 @@ import psycopg2
 import psycopg2.extras
 from creation_bdd import connection, execute_command
 
-def connection(USERNAME, PASSWORD):    
+def execute_query(command, conn, cur):
     """
-    Permet de se connecter au CREMI
+    Execute une requete 
     """
-
-    print("Connexion à la base de données...")
     try:
-        conn = psycopg2.connect(host="pgsql", dbname=USERNAME, user=USERNAME, password=PASSWORD)
-    except Exception as e:
-        exit("Unable to connect to the database: " + str(e))
-        
-    print("Connected to the database")
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    return conn, cur
+        cur.execute(query)
+        rows = cur.fetchall()
+        return rows
+    except psycopg2.Error as e:
+        cur.close()
+        conn.close()
+        print("Error:", e)
+        return None
 
 # Connection
 conn, cur = connection("username", "password") # à remplacer par le mot de passe d’accès aux bases
