@@ -176,7 +176,7 @@ table_eco = """create table public.Economie(
     taux_activite_2019 FLOAT CHECK (taux_activite_2019 <= 100),
     taux_activite_2017 FLOAT CHECK (taux_activite_2017 <= 100),
     part_jeune_diplome_2014 FLOAT CHECK (part_jeune_diplome_2014 <= 100),
-    part_jeune_diplome_2019 FLOAT CHECK (part_jeune_diplome_2019 <= 100),
+    part_jeune_diplome_2009 FLOAT CHECK (part_jeune_diplome_2009 <= 100),
     effort_recherche_2014 FLOAT CHECK (effort_recherche_2014 <= 100) NOT NULL,
     effort_recherche_2010 FLOAT CHECK (effort_recherche_2010 <= 100) NOT NULL
     );"""
@@ -192,7 +192,7 @@ donnees_reg_economie_df.columns = ['reg',
                                    'taux_activite_2019', 
                                    'taux_activite_2017', 
                                    'part_jeune_diplome_2014', 
-                                   'part_jeune_diplome_2019' , 
+                                   'part_jeune_diplome_2009' , 
                                    'effort_recherche_2014' , 
                                    'effort_recherche_2010']
 
@@ -201,7 +201,7 @@ donnees_reg_economie_df.columns = ['reg',
 insert_eco = """INSERT INTO Economie (
     id_reg, taux_activite_2019,
     taux_activite_2017, part_jeune_diplome_2014,
-    part_jeune_diplome_2019,
+    part_jeune_diplome_2009,
     effort_recherche_2014,
     effort_recherche_2010) 
     VALUES (%s, %s, %s, %s, %s, %s, %s)"""
