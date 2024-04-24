@@ -1,133 +1,200 @@
-"""
-TODO : 
-
-1. Afficher la liste des régions disponibles et demander à l'utilisateur de choisir une région puis : 
-
-Soit : 
-2. Demander à l'utilisateur de choisir un thème : population, social, économique puis aller en 6
-
-3. Afficher les départements de la région choisie et demander à l'utilisateur de choisir un département de la région
-4. Demander à l 'utilisateur de choisir un thème : population, social, économique et afficher les années disponibles pour le theme choisi
-5. Demander à l 'utilisateur de choisir un une année disponible et afficher les donnés pour le thème et l'année choisi (pour la région ou le département)
-
-6. Proposer l'impression de la table dans un fichier ou de retourner au départ du menu
-
-"""
-
 import pandas as pd
-import psycopg2 
+import psycopg2
 import psycopg2.extras
-from creation_bdd import connection, execute_command
+import openpyxl
 
-def print_and_wait(message, list_des_choix):
-    while True:
-        try:
-            user_input = int(input(message))
-            break
-        except ValueError:
-            print("Merci d'entrer un nombre valide")
+def connection(USERNAME, PASSWORD):    
+    """
+    Permet de se connecter au CREMI
+    """
 
+    print("Connexion à la base de données...")
+    try:
+        conn = psycopg2.connect(host="pgsql", dbname=USERNAME, user=USERNAME, password=PASSWORD)
+    except Exception as e:
+        exit("Unable to connect to the database: " + str(e))
+        
+    print("Connected to the database")
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    return conn, cur
 
-# Voici ce que je propose. Mais pour les choix 4 et 5 j'arrive pas par ce que les années ne sont pas disponibles spécifiquement dans nos tables
-
-# Fonction pour afficher la liste des régions disponibles
+def execute_query(command, conn, cur, print_output=False):
+    """
+    Execute une requete 
+    """
+    try:
+        cur.execute(command)
+        rows = cur.fetchall()
+        if print_output:
+            if rows:
+                for row in rows:
+                    print(row)
+            else:
+                print("Rien à afficher.")
+        return rows
+    except psycopg2.Error as e:
+        cur.close()
+        conn.close()
+        print("Error:", e)
+        return None
+    
 def display_regions(cur):
-    cur.execute("SELECT nom_reg FROM Regions")
+    cur.execute("SELECT id_reg, nom_reg FROM public.Regions")
     regions = cur.fetchall()
     print("Régions disponibles :")
     for i, region in enumerate(regions, 1):
-        print(f"{i}. {region[0]}")
-    return regions
+        print(f"{region[0]}. {region[1]}")
 
-
-# Fonction pour afficher les départements d'une région choisie
+def menu_reg(conn, cur): 
+    print("\nChoisisez une région en donant son numéro :\n")
+    display_regions(cur)   
+    return int(input("Entrer le numéro de la région\n> "))
+ 
 def display_departments_of_region(cur, chosen_region):
-    cur.execute("SELECT nom_dep FROM Departements WHERE id_reg = (SELECT id_reg FROM Regions WHERE nom_reg = %s)", (chosen_region,))
+    cur.execute("SELECT id_dep, nom_dep FROM public.Departements WHERE id_reg = %s", (chosen_region,))
     departements = cur.fetchall()
-    print("Départements de la région :", chosen_region)
+    print("\nDépartements de la région :", chosen_region)
     for i, departement in enumerate(departements, 1):
-        print(f"{i}. {departement[0]}")
-    return departements
+        print(f"{departement[0]}. {departement[1]}")
 
-# Fonction pour afficher les années disponibles pour un thème donné
-def display_available_years
+def choix_niveau_etude():
+    print("\nChoisisez le niveau de l'étude : \n")
+    print("1: Régional (Economie, Social)")
+    print("2: Départemental (Population)")
+    while True : 
+        try : 
+            choix = int(input("> "))
+            if choix == 1 :
+                return "reg"
+            if choix == 2 :
+                return "dep"
+        except :
+            pass 
+        print("Entrée non valide")
 
-# Fonction pour afficher les données pour un thème et une année choisis
-def display_data_for_theme_and_year
+def choix_theme():
+    print("\nChoisissez un thème :\n1. Population\n2. Social\n3. Economie\n")
+    while True : 
+        try : 
+            choix = int(input("> "))
+            if choix == 1 :
+                return "Population"
+            if choix == 2 :
+                return "Social"
+            if choix == 3 :
+                return "Economie"
+        except :
+            pass 
+        print("Entrée non valide")
 
-# Fonction pour imprimer la table dans un fichier CSV
-def print_to_csv(data, filename):
-    with open(filename, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerows(data)
+def menu_dep(conn, cur, reg): 
+    display_departments_of_region(cur, reg)   
+    return input("\nEntrer le numéro de la région\n> ")
 
-# Fonction principale pour afficher le menu et gérer la navigation
-def main():
-    conn, cur = connection("username", "password")  # a remplacer par nos identifiants
+def choix_impression(cols, results): 
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    list_of_colnames = ["Zone"]+cols.split(',')
+    if input("Ecrivez 1 pour sauvegarder la table\n> ") == '1':
+        for col_idx, header in enumerate(list_of_colnames, start=1):
+            sheet.cell(row=1, column=col_idx, value=header)
 
-    while True:
-        print("\nMenu :")
-        print("1. Afficher la liste des régions disponibles")
-        print("2. Choisir une région et un thème")
-        print("3. Afficher les départements d'une région et choisir un département")
-        print("4. Choisir un thème et afficher les années disponibles")
-        print("5. Choisir un thème, une année et afficher les données")
-        print("6. Imprimer la table dans un fichier")
-        print("7. Quitter")
+        for row_idx, row_data in enumerate(results, start=2):
+            for col_idx, col_data in enumerate(row_data, start=1):
+                sheet.cell(row=row_idx, column=col_idx, value=col_data)
+        workbook.save("navigation_output.xlsx")
 
-        choice = input("Votre choix : ")
+def choose_year(aviable_years):
+    for i in aviable_years:
+        print(i)
+    return input("\nTapez une année\n> ")
+    
+def display_available_years(niveau_etude, theme):
+    print("\nVoici les années disponnibles pour le theme selectionné :\n")
+    if niveau_etude == "dep":
+        if theme == "Population":
+            return choose_year(["2015", "2020", "2023"])
+    if niveau_etude == "reg":
+        if theme == "Social":
+            return choose_year(["2013", "2016", "2018", "2021"])
+        if theme == "Economie":
+            return choose_year(["2010", "2014", "2017", "2019"])
+    print("\nAucune année pour le theme/niveau selectionné")
+    return None 
+    
+def case_operator(year, theme):
+    if theme == "Social":
+        return {
+            '2013': 'zone_inondable_2013',
+            '2018': 'zone_inondable_2018',
+            '2016': 's.egloignement_sante_2016',
+            '2021': 's.eloignement_sante_2021',
+        }.get(year, 'public.Regions')
+    if theme == "Economie":
+        return {
+            '2019': 'taux_activite_2019, part_jeune_diplome_2019',
+            '2017': 'taux_activite_2017',
+            '2014': 'part_jeune_diplome_2014, effort_recherche_2014',
+            '2010': 'effort_recherche_2010',
+        }.get(year, 'public.Regions')
+    return 'estimation_pop'
 
-        if choice == "1":
-            display_regions(cur)
-        elif choice == "2":
-            regions = display_regions(cur)
-            chosen_region_index = int(input("Choisissez une région : "))
-            chosen_region = regions[chosen_region_index - 1][0]
-            theme_choice = int(input("Choisissez un thème :\n1. Population\n2. Social\n3. Économique\n"))
-            display_available_years(cur, theme_choice, chosen_region)
-        elif choice == "3":
-            regions = display_regions(cur)
-            chosen_region_index = int(input("Choisissez une région : "))
-            chosen_region = regions[chosen_region_index - 1][0]
-            display_departments_of_region(cur, chosen_region)
-        elif choice == "4":
-            theme_choice = int(input("Choisissez un thème :\n1. Population\n2. Social\n3. Économique\n"))
-            regions = display_regions(cur)
-            chosen_region_index = int(input("Choisissez une région : "))
-            chosen_region = regions[chosen_region_index - 1][0]
-            display_available_years(cur, theme_choice, chosen_region)
-        elif choice == "5":
-            theme_choice = int(input("Choisissez un thème :\n1. Population\n2. Social\n3. Économique\n"))
-            regions = display_regions(cur)
-            chosen_region_index = int(input("Choisissez une région : "))
-            chosen_region = regions[chosen_region_index - 1][0]
-            chosen_year = int(input("Choisissez une année : "))
-            display_data_for_theme_and_year(cur, theme_choice, chosen_region, chosen_year)
-        elif choice == "6":
-            filename = input("Entrez le nom du fichier CSV à créer (avec extension .csv) : ")
-            data = input("Entrez les données à écrire dans le fichier (sous forme de liste de listes) : ")
-            print_to_csv(data, filename)
-            print("La table a été imprimée dans le fichier", filename)
-        elif choice == "7":
-            break
-        else:
-            print("Veuillez choisir une option valide.")
+def display_data(zone, niveau_etude, theme, year, conn, cur): 
+    if niveau_etude == "dep" :
+        table = "estimation_pop_" + year
+        query = "SELECT nom_dep, {} FROM public.Departements WHERE id_dep = %s".format(table)
+        cur.execute(query, (zone,))
+    
+    if niveau_etude == "reg":
+        table = case_operator(year, theme)
+        if theme == "Social":
+            query = """
+                SELECT r.nom_reg, {}
+                FROM public.Regions r
+                JOIN public.Social s ON r.id_reg = s.id_reg
+                WHERE r.id_reg = %s;
+                """.format(table)
 
-    conn.close()
+        if theme == "Economie":
+            query = """
+                SELECT r.nom_reg, {}
+                FROM public.Regions r
+                JOIN public.Economie s ON r.id_reg = s.id_reg
+                WHERE r.id_reg = %s;
+                """.format(table)
+        cur.execute(query, (zone,))  
+    results = cur.fetchall()
+    for row in results:
+        print(row)
+    return results
 
-if __name__ == "__main__":
-    main()
+""" Pour la connection en local """ 
+conn = psycopg2.connect(
+    host="localhost",
+    dbname="public",
+    user="postgres",
+    password="superlucienpiat"
+)
+cur = conn.cursor()
 
+""" Pour la connection au cremi """
+# conn, cur = connection("username", "password")
 
+### MAIN 
 
-
-
-
-
-
-
-
-
-
+exit = ""
+while exit!="q":
+    zone = menu_reg(conn, cur)
+    niveau_etude = choix_niveau_etude()
+    if niveau_etude == 'dep':
+        zone = menu_dep(conn, cur, zone)
+    theme = choix_theme()
+    year = display_available_years(niveau_etude, theme)
+    if year :
+        cols = case_operator(year, theme)
+        print("Zone,", cols)
+        results = display_data(zone, niveau_etude, theme, year, conn, cur)
+        choix_impression(cols, results)
+    exit = input("Appuyez sur q pour quiter: ")
 
 

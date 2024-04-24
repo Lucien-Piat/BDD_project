@@ -155,7 +155,7 @@ donnees_reg_social_df.columns = ['reg',
 donnees_reg_social_df.replace('nd', None, inplace=True)
 
 # Population de la table
-insert_social = """INSERT INTO social (id_reg, 
+insert_social = """INSERT INTO Social (id_reg, 
     egloignement_sante_2021, 
     egloignement_sante_2016, zone_inondable_2013, 
     zone_inondable_2018) 
