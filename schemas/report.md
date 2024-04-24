@@ -1,4 +1,8 @@
 # Introduction
+## Objectifs 
+
+Ce projet vise à construire une base de données intégrant des données socio-économiques des départements et régions français entre 2008 et 2023. À travers l'utilisation de scripts Python et de requêtes SQL, notre objectif est de créer une base de donnée pour stocker, interroger et analyser ces données.
+
 ## Les avantages du modèle relationnel
 SQL est un langage de programmation utilisé pour gérer et manipuler des bases de données relationnelles.
 
@@ -13,7 +17,7 @@ Dans un second temps, nous utiliserons un module de Python pour communiquer avec
 Finalement, nous créerons des requêtes pour répondre aux questions, un script pour parcourir les tables et un module de sauvegarde des données.
 
 # Schema de relation
-Voici le schema de relation de notre base de donées comprenant 5 tables. 
+Voici le schéma de relation de notre base de données comprenant 5 tables.
 
 # Explication sur vos choix de requêtes
 ## Question 1
@@ -52,9 +56,9 @@ Voici le schema de relation de notre base de donées comprenant 5 tables.
 
 ## Question 5
 
-- `SELECT r.nom_reg, c.cn_quotidienne`: Spécifie les colonnes à sélectionner dans le résultat. `r.nom_reg` représente le nom de la région et `c.cn_quotidienne` représente la part de la population ayant une utilisation quotidienne d'internet.
+- `SELECT r.nom_reg, c.cn_quotidienne`: Spécifie les colonnes à sélectionner dans le résultat. 
 
-- `FROM public.Regions r JOIN public.Social s ON r.id_reg = s.id_reg JOIN public.CompNum c ON r.id_reg = c.id_reg JOIN public.Economie e ON r.id_reg = e.id_reg`: Indique les tables à partir desquelles les données sont sélectionnées. Nous utilisons des jointures (JOIN) pour combiner les données des tables "Regions" (aliasée en tant que "r"), "Social" (aliasée en tant que "s"), "CompNum" (aliasée en tant que "c") et "Economie" (aliasée en tant que "e"). Les tables sont jointes sur la colonne "id_reg", qui représente l'ID de la région.
+- `FROM public.Regions r JOIN public.Social s ON r.id_reg = s.id_reg JOIN public.CompNum c ON r.id_reg = c.id_reg JOIN public.Economie e ON r.id_reg = e.id_reg`: Indique les tables à partir desquelles les données sont sélectionnées.
 
 - `WHERE e.taux_activite_2019 > 75 AND s.egloignement_sante_2021 < 5`: Filtre les lignes en fonction de deux conditions. Nous sélectionnons uniquement les régions où le taux d'activité était supérieur à 75% en 2019 et où la part de la population éloignée de plus de 7 mn des services de santé de proximité était de moins de 5% en 2021.
 
