@@ -118,7 +118,7 @@ def display_available_years(niveau_etude, theme):
         if theme == "Social":
             return choose_year(["2013", "2016", "2018", "2021"])
         if theme == "Economie":
-            return choose_year(["2010", "2014", "2017", "2019"])
+            return choose_year(["2009", "2010", "2014", "2017", "2019"])
     print("\nAucune année pour le theme/niveau selectionné")
     return None 
     
@@ -132,9 +132,10 @@ def case_operator(year, theme):
         }.get(year, 'public.Regions')
     if theme == "Economie":
         return {
-            '2019': 'taux_activite_2019, part_jeune_diplome_2019',
+            '2009': 's.part_jeune_diplome_2009',
+            '2019': 'taux_activite_2019',
             '2017': 'taux_activite_2017',
-            '2014': 'part_jeune_diplome_2014, effort_recherche_2014',
+            '2014': 's.part_jeune_diplome_2014, effort_recherche_2014',
             '2010': 'effort_recherche_2010',
         }.get(year, 'public.Regions')
     return 'estimation_pop'
